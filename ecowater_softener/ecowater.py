@@ -124,7 +124,7 @@ class Ecowater:
             logging.error(f'Error with data: {e}')
             return ''
 
-    def rechargeSchedule(self):
+    def rechargeScheduled(self):
         try:
             nextRecharge_re = "device-info-nextRecharge'\)\.html\('(?P<nextRecharge>.*)'"
             nextRecharge_result = re.search(nextRecharge_re, self._get()['recharge'])
