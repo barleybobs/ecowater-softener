@@ -10,7 +10,7 @@ setup(
     description="A small package to pull data from Ecowater water softeners",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/clement-bonnet/medium-first-package",
+    url="https://github.com/barleybobs/ecowater_softener/",
     packages=find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
