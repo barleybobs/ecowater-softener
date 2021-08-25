@@ -5,12 +5,12 @@ with open("README.md", "r") as f:
 
 setup(
     name="ecowater_softener",
-    version="0.0.2.4",
+    version="0.0.2.7",
     author="barleybobs",
     description="A small package to pull data from Ecowater water softeners",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/barleybobs/ecowater_softener",
+    url="https://github.com/barleybobs/ecowater-softener",
     packages=find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
