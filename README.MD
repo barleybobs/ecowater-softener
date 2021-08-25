@@ -1,5 +1,6 @@
 # Ecowater Softner
  ![PyPI](https://img.shields.io/pypi/v/ecowater-softener?style=for-the-badge)
+ ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/ecowater_softener?style=for-the-badge)
  ![PyPI - License](https://img.shields.io/pypi/l/ecowater-softener?style=for-the-badge)
  ![GitHub Repo stars](https://img.shields.io/github/stars/barleybobs/ecowater_softener?style=for-the-badge)
 
