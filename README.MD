@@ -21,8 +21,11 @@ from ecowater_softener import Ecowater
 
 ecowaterDevice = Ecowater('username', 'password', 'serialnumber')
 
-# returns 'days until the device is out of salt'
+# returns 'days until the device is out of salt' as an integer
 ecowaterDevice.daysUntilOutOfSalt()
+
+# returns 'date when device will run out of salt' as datetime object
+ecowaterDevice.outOfSaltOn()
 
 # returns 'the salt level' as an integer
 ecowaterDevice.saltLevel()
@@ -42,7 +45,7 @@ ecowaterDevice.waterAvailable()
 # returns 'the amount of water flow' as an integer
 ecowaterDevice.waterFlow()
 
-# returns 'the units for the water measurements'
+# returns 'the units for the water measurements' as a string
 ecowaterDevice.waterUnits()
 
 # returns 'true or false depending on whether recharge is enabled'

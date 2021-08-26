@@ -1,4 +1,5 @@
 import requests, re, json, logging
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 request_validation_re = re.compile(r'<input name="__RequestVerificationToken" type="hidden" value="([^"]*)" />')
@@ -63,14 +64,21 @@ class Ecowater:
 
     def daysUntilOutOfSalt(self):
         try:
-            return self._get()['out_of_salt_days']
+            return int(self._get()['out_of_salt_days'])
+        except Exception as e:
+            logging.error(f'Error with data: {e}')
+            return ''
+
+    def outOfSaltOn(self):
+        try:
+            return datetime.strptime(self._get()['out_of_salt'], '%d/%m/%Y')
         except Exception as e:
             logging.error(f'Error with data: {e}')
             return ''
 
     def saltLevel(self):
         try:
-            return self.__get()['salt_level']
+            return self._get()['salt_level']
         except Exception as e:
             logging.error(f'Error with data: {e}')
             return ''
