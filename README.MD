@@ -4,7 +4,7 @@
  ![PyPI - License](https://img.shields.io/pypi/l/ecowater-softener?style=for-the-badge)
  ![GitHub Repo stars](https://img.shields.io/github/stars/barleybobs/ecowater-softener?style=for-the-badge)
 
-ecowater-softner is a Python library for collecting information from Ecowater water softeners.
+ecowater-softener is a Python library for collecting information from Ecowater water softeners.
 
 ## Installation
 
