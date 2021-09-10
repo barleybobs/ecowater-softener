@@ -21,6 +21,9 @@ from ecowater_softener import Ecowater
 
 ecowaterDevice = Ecowater('username', 'password', 'serialnumber')
 
+# returns 'all data other commands can get' as a dictionary
+ecowaterDevice.getData()
+
 # returns 'days until the device is out of salt' as an integer
 ecowaterDevice.daysUntilOutOfSalt()
 
@@ -57,6 +60,9 @@ ecowaterDevice.rechargeScheduled()
 # returns 'true or false depending on whether the device is online'
 ecowaterDevice.deviceStatus()
 ```
+Using ``` ecowaterDevice.getData()``` is optimal as it only uses one request and returns all of the data as a dictionary.
+
+E.g. ``` {'daysUntilOutOfSalt': 421, 'outOfSaltOn': datetime.datetime(2025, 5, 5, 0, 0), 'saltLevel': 3, 'saltLevelPercent': 21, 'waterUsageToday': 50, 'waterUsageDailyAverage': 143, 'waterAvailable': 1332, 'waterFlow': 0, 'waterUnits': 'Liters', 'rechargeEnabled': True, 'rechargeScheduled': False, 'deviceStatus': True} ```
 
 ## Credits
 Thanks to [Kyle Johnson](https://github.com/kylejohnson) for his work on using python to interface with Ecowater water softeners. Most of this libraries code is built upon code which he wrote. You can read his article regarding scraping data from Ecowater water softeners at https://gnulnx.net/2020/02/18/ecowater-api-scraping/

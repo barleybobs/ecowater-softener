@@ -62,6 +62,31 @@ class Ecowater:
 
             return json_data
 
+    def getData(self):
+        try:
+            data = self._get()
+            new_data = {}
+
+            nextRecharge_re = "device-info-nextRecharge'\)\.html\('(?P<nextRecharge>.*)'"
+
+            new_data['daysUntilOutOfSalt'] = int(data['out_of_salt_days'])
+            new_data['outOfSaltOn'] = datetime.strptime(data['out_of_salt'], '%d/%m/%Y')
+            new_data['saltLevel'] = data['salt_level']
+            new_data['saltLevelPercent'] = data['salt_level_percent']
+            new_data['waterUsageToday'] = data['water_today']
+            new_data['waterUsageDailyAverage'] = data['water_avg']
+            new_data['waterAvailable'] = data['water_avail']
+            new_data['waterFlow'] = data['water_flow']
+            new_data['waterUnits'] = data['water_units']
+            new_data['rechargeEnabled'] = data['rechargeEnabled']
+            new_data['rechargeScheduled'] = False if (re.search(nextRecharge_re, data['recharge'])).group('nextRecharge') == 'Not Scheduled' else True
+            new_data['deviceStatus'] = data['online']
+
+            return new_data
+        except Exception as e:
+            logging.error(f'Error with data: {e}')
+            return ''
+
     def daysUntilOutOfSalt(self):
         try:
             return int(self._get()['out_of_salt_days'])
