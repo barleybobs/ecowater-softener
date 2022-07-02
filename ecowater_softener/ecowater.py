@@ -1,5 +1,4 @@
 import requests, re, json, logging
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 request_validation_re = re.compile(r'<input name="__RequestVerificationToken" type="hidden" value="([^"]*)" />')
@@ -26,34 +25,33 @@ class Ecowater:
 
                 headers = {
                     'Accept': '*/*',
-                    'Accept-Encoding': 'gzip, deflate, br',
                     'Accept-Language' : 'en-US,en;q=0.5',
                     'X-Requested-With': 'XMLHttpRequest',
                     'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                    'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:73.0) Gecko/20100101 Firefox/73.0'
+                    'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:73.0) Gecko/20100101 Firefox/102.0'
                 }
             except Exception as e:
                 logging.error(f'Error setting variables: {e}')
 
             try:
-                website_data = session.get('https://www.wifi.ecowater.com/Site/Login')
+                website_data = session.get('https://wifi.ecowater.com/Site/Login')
             except requests.exceptions.RequestException as e:
-                logging.error(f'Error connecting to "www.wifi.ecowater.com": {e}')
+                logging.error(f'Error connecting to "wifi.ecowater.com": {e}')
 
             tokens = request_validation_re.findall(website_data.text)
             payload['__RequestVerificationToken'] = tokens[0]
 
             try:
-                website_login = session.post('https://www.wifi.ecowater.com/Site/Login', data=payload)
+                website_login = session.post('https://wifi.ecowater.com/Site/Login', data=payload)
             except requests.exceptions.RequestException as e:
-                logging.error(f'Error logging in to "www.wifi.ecowater.com": {e}')
+                logging.error(f'Error logging in to "wifi.ecowater.com": {e}')
 
             headers['Referer'] = website_login.url + '/' + dsn['dsn']
 
             try:
-                data = session.post('https://www.wifi.ecowater.com/Dashboard/UpdateFrequentData', data=dsn, headers=headers)
+                data = session.post('https://wifi.ecowater.com/Dashboard/UpdateFrequentData', data=dsn, headers=headers)
             except requests.exceptions.RequestException as e:
-                logging.error(f'Error getting json from "www.wifi.ecowater.com": {e}')
+                logging.error(f'Error getting json from "wifi.ecowater.com": {e}')
 
             if data.status_code != 200:
                 logging.error(f'Error status code of: {data.status_code}')
@@ -70,7 +68,7 @@ class Ecowater:
             nextRecharge_re = "device-info-nextRecharge'\)\.html\('(?P<nextRecharge>.*)'"
 
             new_data['daysUntilOutOfSalt'] = int(data['out_of_salt_days'])
-            new_data['outOfSaltOn'] = datetime.strptime(data['out_of_salt'], '%d/%m/%Y')
+            new_data['outOfSaltOn'] = data['out_of_salt']
             new_data['saltLevel'] = data['salt_level']
             new_data['saltLevelPercent'] = data['salt_level_percent']
             new_data['waterUsageToday'] = data['water_today']
@@ -96,7 +94,7 @@ class Ecowater:
 
     def outOfSaltOn(self):
         try:
-            return datetime.strptime(self._get()['out_of_salt'], '%d/%m/%Y')
+            return self._get()['out_of_salt']
         except Exception as e:
             logging.error(f'Error with data: {e}')
             return ''
