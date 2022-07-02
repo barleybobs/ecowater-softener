@@ -27,7 +27,7 @@ ecowaterDevice.getData()
 # returns 'days until the device is out of salt' as an integer
 ecowaterDevice.daysUntilOutOfSalt()
 
-# returns 'date when device will run out of salt' as datetime object
+# returns 'date when device will run out of salt' as string object
 ecowaterDevice.outOfSaltOn()
 
 # returns 'the salt level' as an integer
