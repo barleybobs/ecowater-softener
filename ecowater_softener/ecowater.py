@@ -1,4 +1,5 @@
 import requests, re, json, logging
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 request_validation_re = re.compile(r'<input name="__RequestVerificationToken" type="hidden" value="([^"]*)" />')
@@ -22,6 +23,7 @@ class Ecowater:
             try:
                 payload = self.payload
                 dsn = self.dsn
+                now = datetime.now()
 
                 headers = {
                     'Accept': '*/*',
@@ -57,6 +59,17 @@ class Ecowater:
                 logging.error(f'Error status code of: {data.status_code}')
 
             json_data = json.loads(data.text)
+
+            try: 
+                water_usage_data = session.get('https://wifi.ecowater.com/Dashboard/GraphBy?by=week&date=' + now.strftime("%Y-%#m-%#d") + '&dsn=' + dsn['dsn'], headers=headers)
+            except requests.exceptions.RequestException as e:
+                logging.error(f'Error getting water usage from "wifi.ecowater.com": {e}')
+
+            if water_usage_data.status_code != 200:
+                logging.error(f'Error status code of: {data.status_code}')
+
+            json_water_usage_data = json.loads(water_usage_data.text)
+            json_data['water_today'] = json_water_usage_data['data'][json_water_usage_data['labels'].index(now.strftime("%A"))]
 
             return json_data
 
