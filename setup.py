@@ -5,12 +5,15 @@ with open("README.md", "r") as f:
 
 setup(
     name="ecowater_softener",
-    version="1.1.0",
+    version="2.0.0",
     author="barleybobs",
     description="A small package to pull data from Ecowater water softeners",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/barleybobs/ecowater-softener",
+    install_requires=[
+        "ayla-iot-unofficial==1.4.1"
+    ],
     packages=find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

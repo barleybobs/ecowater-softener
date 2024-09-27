@@ -1,1 +1,1 @@
-from ecowater_softener.ecowater import Ecowater
+from ecowater_softener.ecowater import EcowaterAccount, EcowaterDevice
