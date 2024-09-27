@@ -1,185 +1,95 @@
-import requests, re, json, logging
-from datetime import datetime
+import ayla_iot_unofficial
+import datetime
 
-logger = logging.getLogger(__name__)
-request_validation_re = re.compile(r'<input name="__RequestVerificationToken" type="hidden" value="([^"]*)" />')
+from .const import (
+    APP_ID,
+    APP_SECRET,
+)
 
-class Ecowater:
-    def __init__(self, username, password, serialnumber):
-        try:
-            self.payload = {
-                "Email" : str(username),
-                "Password" : str(password),
-                "Remember" : 'false'
-            }
-            self.dsn = {
-                "dsn": str(serialnumber)
-            }
-        except Exception as e:
-            logging.error(f'Error with inputs: {e}')
+class EcowaterDevice(ayla_iot_unofficial.device.Device):
+    # Device Info
+    @property
+    def ip_address(self) -> str:
+        return self._device_ip_address
 
-    def _get(self):
-        with requests.Session() as session:
-            try:
-                payload = self.payload
-                dsn = self.dsn
-                now = datetime.now()
+    @property
+    def rssi(self) -> int:
+        return self.get_property_value("rf_signal_strength_dbm")
 
-                headers = {
-                    'Accept': '*/*',
-                    'Accept-Language' : 'en-US,en;q=0.5',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                    'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:73.0) Gecko/20100101 Firefox/102.0'
-                }
-            except Exception as e:
-                logging.error(f'Error setting variables: {e}')
+    # Water
+    
+    @property
+    def water_use_avg_daily(self) -> int:
+        return self.get_property_value("avg_daily_use_gals")
+    
+    @property
+    def water_use_today(self) -> int:
+        return self.get_property_value("gallons_used_today")
+    
+    @property
+    def water_available(self) -> int:
+        return self.get_property_value("treated_water_avail_gals")
+    
+    # Water flow
 
-            try:
-                website_data = session.get('https://wifi.ecowater.com/Site/Login')
-            except requests.exceptions.RequestException as e:
-                logging.error(f'Error connecting to "wifi.ecowater.com": {e}')
+    @property
+    def current_water_flow(self) -> int:
+        return self.get_property_value("current_water_flow_gpm")
 
-            tokens = request_validation_re.findall(website_data.text)
-            payload['__RequestVerificationToken'] = tokens[0]
+    # Salt
 
-            try:
-                website_login = session.post('https://wifi.ecowater.com/Site/Login', data=payload)
-            except requests.exceptions.RequestException as e:
-                logging.error(f'Error logging in to "wifi.ecowater.com": {e}')
+    @property
+    def salt_level_percentage(self) -> int:
+        return self.get_property_value("salt_level_tenths") * 2
+    
+    @property
+    def out_of_salt_days(self) -> int:
+        return self.get_property_value("out_of_salt_estimate_days")
+    
+    @property
+    def out_of_salt_date(self) -> datetime.date:
+        return datetime.datetime.now().date() + datetime.timedelta(days = self.get_property_value("out_of_salt_estimate_days"))
+    
+    # Rock
 
-            headers['Referer'] = website_login.url + '/' + dsn['dsn']
+    @property
+    def rock_removed(self) -> int:
+        return self.get_property_value("total_rock_removed_lbs")
+    
+    # Recharge
 
-            try:
-                data = session.post('https://wifi.ecowater.com/Dashboard/UpdateFrequentData', data=dsn, headers=headers)
-            except requests.exceptions.RequestException as e:
-                logging.error(f'Error getting json from "wifi.ecowater.com": {e}')
+    @property
+    def recharge_enabled(self) -> bool:
+        return self.get_property_value("regen_enable_enum") == 1
+    
+    @property
+    def recharge_scheduled(self) -> bool:
+        return self.get_property_value("regen_status_enum") == 1
 
-            if data.status_code != 200:
-                logging.error(f'Error status code of: {data.status_code}')
+    @property
+    def last_recharge_days(self) -> int:
+        return self.get_property_value("days_since_last_regen")
+    
+    @property
+    def last_recharge_date(self) -> datetime.date:
+        return datetime.datetime.now().date() - datetime.timedelta(days = self.get_property_value("days_since_last_regen"))
+    
 
-            json_data = json.loads(data.text)
+class EcowaterAccount:
+    def __init__(self, username: str, password: str) -> None:
+        self.ayla_api = ayla_iot_unofficial.new_ayla_api(username, password, APP_ID, APP_SECRET)
+        self.ayla_api.sign_in()
 
-            try: 
-                water_usage_data = session.get('https://wifi.ecowater.com/Dashboard/GraphBy?by=week&date=' + now.strftime("%Y-%#m-%#d") + '&dsn=' + dsn['dsn'], headers=headers)
-            except requests.exceptions.RequestException as e:
-                logging.error(f'Error getting water usage from "wifi.ecowater.com": {e}')
+    def get_devices(self) -> list:
+        devices = self.ayla_api.get_devices()
 
-            if water_usage_data.status_code != 200:
-                logging.error(f'Error status code of: {data.status_code}')
+        # Filter for Ecowater devices
+        devices = list(filter(lambda device: device._oem_model_number.startswith("EWS"), devices))
 
-            json_water_usage_data = json.loads(water_usage_data.text)
-            json_data['water_today'] = json_water_usage_data['data'][json_water_usage_data['labels'].index(now.strftime("%A"))]
+        # Convert devices to EcowaterDevice Class
+        for device in devices:
+            setattr(device, "__class__", EcowaterDevice)
+            device.metric = False
+            device.update()
 
-            return json_data
-
-    def getData(self):
-        try:
-            data = self._get()
-            new_data = {}
-
-            nextRecharge_re = "device-info-nextRecharge'\)\.html\('(?P<nextRecharge>.*)'"
-
-            new_data['daysUntilOutOfSalt'] = int(data['out_of_salt_days'])
-            new_data['outOfSaltOn'] = data['out_of_salt']
-            new_data['saltLevel'] = data['salt_level']
-            new_data['saltLevelPercent'] = data['salt_level_percent']
-            new_data['waterUsageToday'] = data['water_today']
-            new_data['waterUsageDailyAverage'] = data['water_avg']
-            new_data['waterAvailable'] = data['water_avail']
-            new_data['waterFlow'] = data['water_flow']
-            new_data['waterUnits'] = data['water_units']
-            new_data['rechargeEnabled'] = data['rechargeEnabled']
-            new_data['rechargeScheduled'] = False if (re.search(nextRecharge_re, data['recharge'])).group('nextRecharge') == 'Not Scheduled' else True
-            new_data['deviceStatus'] = data['online']
-
-            return new_data
-        except Exception as e:
-            logging.error(f'Error with data: {e}')
-            return ''
-
-    def daysUntilOutOfSalt(self):
-        try:
-            return int(self._get()['out_of_salt_days'])
-        except Exception as e:
-            logging.error(f'Error with data: {e}')
-            return ''
-
-    def outOfSaltOn(self):
-        try:
-            return self._get()['out_of_salt']
-        except Exception as e:
-            logging.error(f'Error with data: {e}')
-            return ''
-
-    def saltLevel(self):
-        try:
-            return self._get()['salt_level']
-        except Exception as e:
-            logging.error(f'Error with data: {e}')
-            return ''
-
-    def saltLevelPercent(self):
-        try:
-            return self._get()['salt_level_percent']
-        except Exception as e:
-            logging.error(f'Error with data: {e}')
-            return ''
-
-    def waterUsageToday(self):
-        try:
-            return self._get()['water_today']
-        except Exception as e:
-            logging.error(f'Error with data: {e}')
-            return ''
-
-    def waterUsageDailyAverage(self):
-        try:
-            return self._get()['water_avg']
-        except Exception as e:
-            logging.error(f'Error with data: {e}')
-            return ''
-
-    def waterAvailable(self):
-        try:
-            return self._get()['water_avail']
-        except Exception as e:
-            logging.error(f'Error with data: {e}')
-            return ''
-
-    def waterFlow(self):
-        try:
-            return self._get()['water_flow']
-        except Exception as e:
-            logging.error(f'Error with data: {e}')
-            return ''
-
-    def waterUnits(self):
-        try:
-            return self._get()['water_units']
-        except Exception as e:
-            logging.error(f'Error with data: {e}')
-            return ''
-
-    def rechargeEnabled(self):
-        try:
-            return self._get()['rechargeEnabled']
-        except Exception as e:
-            logging.error(f'Error with data: {e}')
-            return ''
-
-    def rechargeScheduled(self):
-        try:
-            nextRecharge_re = "device-info-nextRecharge'\)\.html\('(?P<nextRecharge>.*)'"
-            nextRecharge_result = re.search(nextRecharge_re, self._get()['recharge'])
-            return False if nextRecharge_result.group('nextRecharge') == 'Not Scheduled' else True
-        except Exception as e:
-            logging.error(f'Error with data: {e}')
-            return ''
-
-    def deviceStatus(self):
-        try:
-            return self._get()['online']
-        except Exception as e:
-            logging.error(f'Error with data: {e}')
-            return ''
+        return devices
