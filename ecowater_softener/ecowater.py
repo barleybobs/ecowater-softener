@@ -1,13 +1,37 @@
-import ayla_iot_unofficial
-import datetime
+import ayla_iot_unofficial, datetime, time
 
 from .const import (
     APP_ID,
     APP_SECRET,
+    UPDATE_PROPERTY
 )
 
 class EcowaterDevice(ayla_iot_unofficial.device.Device):
+    def update(self, property_list = None):
+        data = super(EcowaterDevice, self).update(property_list)
+        
+        # If data hasn't been updated in the last 5 mins then tell the device to update the data and wait 30 secs for the device to update the data
+        last_updated = datetime.datetime.strptime(self.properties_full["gallons_used_today"]["data_updated_at"], "%Y-%m-%dT%H:%M:%SZ")
+        last_updated = last_updated.replace(tzinfo=datetime.timezone.utc)
+        current_time = datetime.datetime.now(datetime.timezone.utc)
+        five_minutes_ago = current_time - datetime.timedelta(minutes=5)
+
+        if last_updated < five_minutes_ago:
+            self.ayla_api.self_request('post', self.set_property_endpoint(UPDATE_PROPERTY), json={'datapoint': {'value': 1}})
+            time.sleep(30)
+            data = super(EcowaterDevice, self).update(property_list)
+        
+        return data
+
     # Device Info
+    @property
+    def model(self) -> str:
+        return self.get_property_value('model_description')
+    
+    @property
+    def software_version(self) -> str:
+        return self.get_property_value("base_software_version")
+
     @property
     def ip_address(self) -> str:
         return self._device_ip_address
@@ -50,13 +74,32 @@ class EcowaterDevice(ayla_iot_unofficial.device.Device):
     def out_of_salt_date(self) -> datetime.date:
         return datetime.datetime.now().date() + datetime.timedelta(days = self.get_property_value("out_of_salt_estimate_days"))
     
+    @property
+    def salt_type(self) -> str:
+        if self.get_property_value("salt_type_enum") == 0:
+            return "NaCl"
+        else:
+            return "KCl"
+    
     # Rock
 
     @property
-    def rock_removed(self) -> int:
-        return self.get_property_value("total_rock_removed_lbs")
+    def rock_removed_avg_daily(self) -> float:
+        return self.get_property_value("daily_avg_rock_removed_lbs") /10000
+
+    @property
+    def rock_removed(self) -> float:
+        return self.get_property_value("total_rock_removed_lbs") / 10
     
     # Recharge
+    @property
+    def recharge_status(self) -> str:
+        if self.get_property_value("regen_enable_enum") == 0:
+            return "None"
+        elif self.get_property_value("regen_enable_enum") == 1:
+            return "Scheduled"
+        else:
+            return "Recharging"
 
     @property
     def recharge_enabled(self) -> bool:
@@ -65,6 +108,10 @@ class EcowaterDevice(ayla_iot_unofficial.device.Device):
     @property
     def recharge_scheduled(self) -> bool:
         return self.get_property_value("regen_status_enum") == 1
+    
+    @property
+    def recharge_recharging(self) -> bool:
+        return self.get_property_value("regen_status_enum") == 2
 
     @property
     def last_recharge_days(self) -> int:
@@ -89,7 +136,5 @@ class EcowaterAccount:
         # Convert devices to EcowaterDevice Class
         for device in devices:
             setattr(device, "__class__", EcowaterDevice)
-            device.metric = False
-            device.update()
 
         return devices
