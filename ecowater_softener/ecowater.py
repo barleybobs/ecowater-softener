@@ -94,9 +94,9 @@ class EcowaterDevice(ayla_iot_unofficial.device.Device):
     # Recharge
     @property
     def recharge_status(self) -> str:
-        if self.get_property_value("regen_enable_enum") == 0:
+        if self.get_property_value("regen_status_enum") == 0:
             return "None"
-        elif self.get_property_value("regen_enable_enum") == 1:
+        elif self.get_property_value("regen_status_enum") == 1:
             return "Scheduled"
         else:
             return "Recharging"
