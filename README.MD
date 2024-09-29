@@ -23,11 +23,15 @@ Importing the library
 import ecowater_softener
 ```
 
+### Account
+
 Initialize Ecowater account using username and password credentials
 
 ```python
 ecowater_account = ecowater_softener.EcowaterAccount('username', 'password')
 ```
+
+### Devices
 
 Retrieve a list of all devices associated with the Ecowater account
 
@@ -41,59 +45,65 @@ Access the first device from the list of devices
 device = devices[0]
 ```
 
+Get / Update the devices values (Needs to be ran before accessing data or the data will return None)
+
+```python
+device.update()
+```
+
+### Device Info
+
+Get the device model (string)
+
+```python
+model = device.model
+```
+
+Get the device serial number (string)
+
+```python
+serial_number = device.serial_number
+```
+
+Get the device software version (string)
+
+```python
+software_version = device.software_version
+```
+
 Get the signal strength (rssi) (integer)
 
 ```python
 rssi = device.rssi
 ```
 
-Get the device's serial number (string)
-
-```python
-serial_number = device.serial_number
-```
-
-Get the device's ip address (string)
+Get the device ip address (string)
 
 ```python
 ip_address = device.ip_address
 ```
 
-Get the number of days until the device runs out of salt (integer)
+### Water
+
+Get the average daily water usage (integer)
 
 ```python
-days_until_out_of_salt = device.out_of_salt_days
-```
-
-Get the estimated date when the device will run out of salt (datetime.date)
-
-```python
-salt_depletion_date = device.out_of_salt_date
-```
-
-Get the current salt level as a percentage (integer)
-
-```python
-salt_level_percentage = device.salt_level_percentage
+water_use_avg_daily = device.water_use_avg_daily
 ```
 
 Get the amount of water used today (integer)
 
 ```python
-water_usage_today = device.water_use_avg_today
-```
-
-Get the average daily water usage (integer)
-
-```python
-average_daily_water_usage = device.water_use_avg_daily
+water_use_today = device.water_use_today
 ```
 
 Get the current amount of available water (integer)
 
 ```python
-available_water = device.water_available
+water_available = device.water_available
 ```
+
+### Water Flow
 
 Get the current water flow rate (integer)
 
@@ -101,10 +111,76 @@ Get the current water flow rate (integer)
 current_water_flow = device.current_water_flow
 ```
 
+### Salt
+
+Get the current salt level as a percentage (integer)
+
+```python
+salt_level_percentage = device.salt_level_percentage
+```
+
+Get the number of days until the device runs out of salt (integer)
+
+```python
+out_of_salt_days = device.out_of_salt_days
+```
+
+Get the estimated date when the device will run out of salt (datetime.date)
+
+```python
+out_of_salt_date = device.out_of_salt_date
+```
+
+Get the salt type, either "NaCl" or "KCl" (string)
+
+```python
+salt_type = device.salt_type
+```
+
+### Rock
+
+Get the average amount of rock removed daily (float)
+
+```python
+rock_removed_avg_daily = device.rock_removed_avg_daily
+```
+
+Get the total amount of rock removed by the device over its lifetime (float)
+
+```python
+rock_removed = device.rock_removed
+```
+
+### Recharge
+
+Get the recharge status, either "None", "Scheduled", or "Recharging" (string)
+
+```python
+recharge_status = device.recharge_status
+```
+
+Check if recharge is enabled (boolean)
+
+```python
+recharge_enabled = device.recharge_enabled
+```
+
+Check if a recharge is scheduled (boolean)
+
+```python
+recharge_scheduled = device.recharge_scheduled
+```
+
+Check if recharging currently (boolean)
+
+```python
+recharge_recharging = device.recharge_recharging
+```
+
 Get the number of days since the last recharge was performed (integer)
 
 ```python
-days_since_last_recharge = device.last_recharge_days
+last_recharge_days = device.last_recharge_days
 ```
 
 Get the date of the last recharge (datetime.date)
@@ -113,23 +189,9 @@ Get the date of the last recharge (datetime.date)
 last_recharge_date = device.last_recharge_date
 ```
 
-Check if recharge is enabled (boolean)
 
-```python
-is_recharge_enabled = device.recharge_enabled
-```
 
-Check if a recharge is scheduled (boolean)
 
-```python
-is_recharge_scheduled = device.recharge_scheduled
-```
-
-Get the total amount of rock removed by the device over its lifetime (integer)
-
-```python
-lifetime_rock_removed = device.rock_removed
-```
 
 ## Credits
 
