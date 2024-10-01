@@ -105,7 +105,7 @@ water_available = device.water_available
 
 ### Water Flow
 
-Get the current water flow rate (integer)
+Get the current water flow rate (float)
 
 ```python
 current_water_flow = device.current_water_flow
@@ -113,7 +113,7 @@ current_water_flow = device.current_water_flow
 
 ### Salt
 
-Get the current salt level as a percentage (integer)
+Get the current salt level as a percentage (float)
 
 ```python
 salt_level_percentage = device.salt_level_percentage
