@@ -58,7 +58,7 @@ class EcowaterDevice(ayla_iot_unofficial.device.Device):
 
     @property
     def current_water_flow(self) -> int:
-        return self.get_property_value("current_water_flow_gpm")
+        return self.get_property_value("current_water_flow_gpm") / 10
 
     # Salt
 
