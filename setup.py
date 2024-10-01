@@ -5,7 +5,7 @@ with open("README.md", "r") as f:
 
 setup(
     name="ecowater_softener",
-    version="2.1.3",
+    version="2.1.4",
     author="barleybobs",
     description="A small package to pull data from Ecowater water softeners",
     long_description=long_description,
