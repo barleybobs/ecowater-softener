@@ -3,7 +3,8 @@ import ayla_iot_unofficial, datetime, time
 from .const import (
     APP_ID,
     APP_SECRET,
-    UPDATE_PROPERTY
+    UPDATE_PROPERTY,
+    SALT_TENTHS_MAX
 )
 
 class EcowaterDevice(ayla_iot_unofficial.device.Device):
@@ -57,14 +58,14 @@ class EcowaterDevice(ayla_iot_unofficial.device.Device):
     # Water flow
 
     @property
-    def current_water_flow(self) -> int:
+    def current_water_flow(self) -> float:
         return self.get_property_value("current_water_flow_gpm") / 10
 
     # Salt
 
     @property
-    def salt_level_percentage(self) -> int:
-        return self.get_property_value("salt_level_tenths") * 2
+    def salt_level_percentage(self) -> float:
+        return (self.get_property_value("salt_level_tenths") * 100) / SALT_TENTHS_MAX[str(self.get_property_value("model_id"))]
     
     @property
     def out_of_salt_days(self) -> int:
