@@ -55,6 +55,10 @@ class EcowaterDevice(ayla_iot_unofficial.device.Device):
     def water_available(self) -> int:
         return self.get_property_value("treated_water_avail_gals")
     
+    @property
+    def water_total_counter(self) -> int:
+        return self.get_property_value("water_counter_gals")
+
     # Water flow
 
     @property
@@ -92,6 +96,19 @@ class EcowaterDevice(ayla_iot_unofficial.device.Device):
     def rock_removed(self) -> float:
         return self.get_property_value("total_rock_removed_lbs") / 10
     
+    # Ion exchange capacity
+    @property
+    def ion_operating_capacity(self) -> int:
+        return self.get_property_value("operating_capacity_grains")
+
+    @property
+    def ion_capacity_remaining(self) -> int:
+        return self.get_property_value("capacity_remaining_percent") / 10.0
+
+    @property
+    def ion_average_exhaustion(self) -> int:
+        return (1000 - self.get_property_value("average_exhaustion_percent")) / 10.0
+
     # Recharge
     @property
     def recharge_status(self) -> str:

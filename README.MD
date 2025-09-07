@@ -103,6 +103,12 @@ Get the current amount of available water (integer)
 water_available = device.water_available
 ```
 
+Get total water counter (integer)
+
+```python
+water_total_counter = device.water_total_counter
+```
+
 ### Water Flow
 
 Get the current water flow rate (float)
@@ -149,6 +155,23 @@ Get the total amount of rock removed by the device over its lifetime (float)
 
 ```python
 rock_removed = device.rock_removed
+```
+
+### Ion exchange capacity
+
+Get current ion exchange capacity (integer)
+```python
+ion_operating_capacity = device.ion_operating_capacity
+```
+
+Get remaining ion exchange capacity in percent (float)
+```python
+ion_capacity_remaining = device.ion_capacity_remaining
+```
+
+Get average capacity remaining until exhaustion in percent (float)
+```python
+ion_average_exhaustion = device.ion_average_exhaustion
 ```
 
 ### Recharge
